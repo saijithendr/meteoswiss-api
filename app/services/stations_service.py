@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+from typing import Any
 from dataclasses import dataclass
 from datetime import datetime
 from io import StringIO
@@ -472,11 +473,57 @@ class SwissWeatherStations:
             "with_postal_code": int(self.df["postal_code"].notna().sum()),
         }
 
-    def get_all_stations(self) -> list[WeatherStation]:
+    def get_all_stations(self, 
+                        limit: int = 50,
+                        offset: int = 0,
+                        sort_by: str = "name",
+                        order: str = "asc",) -> dict[str, Any]:
         """Get all stations as list"""
         self._ensure_loaded()
-        return [WeatherStation.from_series(row) for _, row in self.df.iterrows()]
+        sort_key = (sort_by or "name").lower()
+        order_key = (order or "asc").lower()
 
+        sort_map = {
+            "name": "point_name",
+            "elevation": "point_height_masl",
+            "abbr": "station_abbr",
+            "id": "point_id",
+            "type": "point_type_en",
+            "postal_code": "postal_code",
+            "lat": "point_coordinates_wgs84_lat",
+            "lon": "point_coordinates_wgs84_lon",
+        }
+
+        if sort_key not in sort_map:
+            raise ValueError(
+                f"Invalid sort_by='{sort_by}'. Allowed: {', '.join(sorted(sort_map.keys()))}"
+            )
+
+        if order_key not in {"asc", "desc"}:
+            raise ValueError("Invalid order. Allowed: asc, desc")
+
+        df = self.df
+        total = int(len(df))
+
+        sort_col = sort_map[sort_key]
+        ascending = (order_key == "asc")
+
+        # Stable sort helps deterministic pagination
+        df_sorted = df.sort_values(by=sort_col, ascending=ascending, kind="mergesort")
+
+        start = int(offset)
+        end = start + int(limit)
+        df_page = df_sorted.iloc[start:end] if start < total else df_sorted.iloc[0:0]
+
+        data = [WeatherStation.from_series(row) for _, row in df_page.iterrows()]
+
+        return {
+            "total": total,
+            "limit": int(limit),
+            "offset": int(offset),
+            "data": data,
+        }
+    
     def count(self) -> int:
         """Get total number of stations"""
         self._ensure_loaded()

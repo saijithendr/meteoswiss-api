@@ -547,7 +547,7 @@ if __name__ == "__main__":
     # Add station metadata
     loader.add_source(
         name="Forecast station id",
-        url="https://data.geo.admin.ch/ch.meteoschweiz.ogd-local-forecasting/ogd-local-forcasting_meta_point.csv",
+        url="https://data.geo.admin.ch/ch.meteoschweiz.ogd-local-forecasting/ogd-local-forecasting_meta_point.csv",
         description="MeteoSwiss stations",
         encoding="latin-1",
         delimiter=";",
