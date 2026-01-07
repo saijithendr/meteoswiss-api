@@ -112,8 +112,19 @@ class LocalForecastHandler:
                 encoding="latin-1",
                 delimiter=";",
                 key_column="parameter_shortname",
+            )    
+
+            self.params_loader.add_source(
+                name="historic_parameters",
+                url="https://data.geo.admin.ch/ch.meteoschweiz.ogd-smn/ogd-smn_meta_parameters.csv",
+                description="MeteoSwiss Historic parameters",
+                encoding="latin-1",
+                delimiter=";",
+                key_column="point_id",
             )
             self.params_loader.load_source("forecast_parameters")
+            self.params_loader.load_source("historic_parameters")
+           
             logger.info("✓ Parameter metadata loaded")
         except Exception as e:
             logger.warning(f"Could not load parameter metadata: {e}")
@@ -474,7 +485,7 @@ class LocalForecastHandler:
         """
         try:
             # Find station
-            candidates = self.stations.get_by_name(station_name, exact=exact)
+            candidates = self.stations.get_by_name(station_name.lower(), exact=exact)
 
             if not candidates:
                 logger.error(f"Station '{station_name}' not found")
@@ -1504,8 +1515,8 @@ class HistoricWeatherHandler:
         end_date: str | None = None,
         aggregation: str = "daily",
         parameters: list[str] | None = None,
-        rename_columns: bool = True,
-        include_units: bool = True,
+        rename_columns: bool = False,
+        include_units: bool = False,
     ) -> HistoricQueryResult | None:
         """
         Fetch historic data by SMN station ID.

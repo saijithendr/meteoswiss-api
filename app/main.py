@@ -2,7 +2,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from app.routers import stations, parameters, historic, forecast
+from app.routers import stations, parameters, historic, forecast, health
 from app.config import settings
 
 def create_app() -> FastAPI:
@@ -33,6 +33,7 @@ def create_app() -> FastAPI:
   
     app.include_router(forecast.router, prefix="/api/v1", tags=["Forecast"])
     app.include_router(historic.router, prefix="/api/v1", tags=["Historic"])
+    app.include_router(health.router)
 
     # Root endpoint
     @app.get("/api/v1/")

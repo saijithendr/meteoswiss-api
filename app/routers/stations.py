@@ -13,15 +13,7 @@ async def list_stations(
     order: str = Query("asc")
 ):
     """List all Swiss weather stations with pagination."""
-    return await service.get_all_stations(limit, offset, sort_by, order)
-
-@router.get("/{station_id}")
-async def get_station(station_id: str):
-    """Get detailed information for a specific weather station."""
-    station = await service.get_by_id(point_id=station_id)
-    if not station:
-        raise HTTPException(status_code=404, detail="Station not found")
-    return station
+    return service.get_all_stations(limit, offset, sort_by, order)
 
 @router.get("/search")
 async def search_stations(
@@ -30,7 +22,16 @@ async def search_stations(
     offset: int = Query(0, ge=0)
 ):
     """Search stations by name or properties."""
-    return await service.search(q, limit, offset)
+    results = service.search(q)
+    total = len(results)
+    start = offset
+    end = start + limit
+    return {
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "data": results[start:end]
+    }
 
 @router.get("/nearby")
 async def find_nearby(
@@ -40,7 +41,7 @@ async def find_nearby(
     limit: int = Query(10, ge=1, le=100)
 ):
     """Find stations within a geographic radius."""
-    return await service.find_nearby(latitude, longitude, radius_km, limit)
+    return service.find_nearby(latitude, longitude, radius_km, limit)
 
 @router.get("/nearest")
 async def find_nearest(
@@ -49,4 +50,12 @@ async def find_nearest(
     n: int = Query(5, ge=1, le=50)
 ):
     """Find N nearest stations to a given location."""
-    return await service.find_nearest(latitude, longitude, n)
+    return service.find_nearest(latitude, longitude, n)
+
+@router.get("/{station_id}")
+async def get_station(station_id: int):
+    """Get detailed information for a specific weather station."""
+    station = service.get_by_id(point_id=station_id)
+    if not station:
+        raise HTTPException(status_code=404, detail="Station not found")
+    return station
