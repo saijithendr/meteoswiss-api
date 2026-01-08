@@ -10,9 +10,7 @@ def create_app() -> FastAPI:
         title="MeteoSwiss Weather API",
         version="1.0.0",
         description="Comprehensive REST API for Swiss weather data",
-        openapi_url="/api/v1/openapi.json",
-        docs_url="/api/v1/docs",
-        redoc_url="/api/v1/redoc"
+
     )
     
     # CORS middleware
@@ -28,21 +26,19 @@ def create_app() -> FastAPI:
     app.add_middleware(GZipMiddleware, minimum_size=1000)
     
     # Include routers
-    app.include_router(stations.router, prefix="/api/v1", tags=["Stations"])
-    app.include_router(parameters.router, prefix="/api/v1", tags=["Parameters"])
+    app.include_router(stations.router, prefix="/api", tags=["Stations"])
+    app.include_router(parameters.router, prefix="/api", tags=["Parameters"])
   
-    app.include_router(forecast.router, prefix="/api/v1", tags=["Forecast"])
-    app.include_router(historic.router, prefix="/api/v1", tags=["Historic"])
+    app.include_router(forecast.router, prefix="/api", tags=["Forecast"])
+    app.include_router(historic.router, prefix="/api", tags=["Historic"])
     app.include_router(health.router)
 
     # Root endpoint
-    @app.get("/api/v1/")
+    @app.get("/")
     async def root():
         return {
             "version": "1.0.0",
             "name": "MeteoSwiss Weather API",
-            "docs": "/api/v1/docs",
-            "redoc": "/api/v1/redoc"
         }
     
     return app
