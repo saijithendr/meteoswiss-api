@@ -26,11 +26,11 @@ def create_app() -> FastAPI:
     app.add_middleware(GZipMiddleware, minimum_size=1000)
     
     # Include routers
-    app.include_router(stations.router, prefix="/api", tags=["Stations"])
-    app.include_router(parameters.router, prefix="/api", tags=["Parameters"])
+    app.include_router(stations.router, tags=["Stations"])
+    app.include_router(parameters.router, tags=["Parameters"])
   
-    app.include_router(forecast.router, prefix="/api", tags=["Forecast"])
-    app.include_router(historic.router, prefix="/api", tags=["Historic"])
+    app.include_router(forecast.router, tags=["Forecast"])
+    app.include_router(historic.router, tags=["Historic"])
     app.include_router(health.router)
 
     # Root endpoint
